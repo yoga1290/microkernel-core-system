@@ -1,6 +1,11 @@
 # Whats this?
 
-Spring module to be used as dependency that pre-configures and initializes commonly used features:
+Spring module to be used as dependency that pre-configures and initializes commonly used.
+This would same boilerplate configuration as well as unify the logging mechanisim, making it easiser for log monitoring tools. 
+
+[![docs/readme.png](docs/readme.png)](docs/readme.puml)
+
+# Pre-configured features:
 
 + API and Service Logging
     + uses AOP to configure MDC context traceable map and produce logs across pointcuts for `@Controller` and `@Service`
@@ -21,18 +26,24 @@ Spring module to be used as dependency that pre-configures and initializes commo
   + 
 
 # Usage:
-### 1. Maven dependency:
 
-Add `<dependency>` into `pom.xml`:
+### 1. Maven dependency:
++ Clone this repo.
++ `mvn install`
+
+### 2. Maven dependency:
+
+Add `<dependency>` into `pom.xml` of the disered app:
 ```xml
 <dependency>
     <groupId>yoga1290</groupId>
-    <artifactId>commons</artifactId>
+    <artifactId>core-system</artifactId>
     <version>1.0.0</version>
 </dependency>
+<!-- TBA: will add <repository> later on; gonna make use of github maven registry & github actions -->
 ```
 
-### 2. Configuration Properties:
+### 3. Configuration Properties:
 
 To scan the required components/package, you will need to add this entrypoint class:
 ```java
