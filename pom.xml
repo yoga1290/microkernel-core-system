@@ -110,12 +110,12 @@
 
 
 	<!-- see https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#publishing-a-package -->
-	<!-- <distributionManagement>
+	<distributionManagement>
 		<repository>
 			<id>github</id>
 			<name>GitHub Apache Maven Packages</name>
 			<url>https://maven.pkg.github.com/yoga1290/spring-core-system</url>
 		</repository>
-	</distributionManagement> -->
+	</distributionManagement>
 
 </project>
