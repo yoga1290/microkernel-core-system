@@ -21,6 +21,6 @@ public abstract class AbstractEmailHandler {
         this.handleMessage(message);
     }
 
-    abstract void handleMessage(Message message);
+    public abstract void handleMessage(Message message);
 
 }
