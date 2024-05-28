@@ -37,17 +37,11 @@ public class EmailListenerConfig {
         props.setProperty("mail.imaps.host", emailHost);
         props.setProperty("mail.imaps.port", emailPort);
 
-//        DEBUG IMAPS: mail.imap.fetchsize: 16384
-//        DEBUG IMAPS: mail.imap.ignorebodystructuresize: false
-//        DEBUG IMAPS: mail.imap.statuscachetimeout: 1000
-//        DEBUG IMAPS: mail.imap.appendbuffersize: -1
-//        DEBUG IMAPS: mail.imap.minidletime: 10
-
         props.setProperty("mail.imaps.minidletime", "1");
 
         // Create a new session with the properties
         Session session = Session.getInstance(props);
-        session.setDebug(true); // Enable debug mode for troubleshooting
+//        session.setDebug(true); // Enable debug mode for troubleshooting
 
         return session;
     }

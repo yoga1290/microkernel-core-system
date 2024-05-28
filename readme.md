@@ -28,8 +28,23 @@ This would same boilerplate configuration as well as unify the logging mechanisi
 # Usage:
 
 ### 1. Maven dependency:
-+ Clone this repo.
-+ `mvn install`
+
++ Add repository to `pom.xml`:
+```xml
+<project>
+  <!-- ..... -->
+  <!-- see https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#publishing-a-package -->
+  <distributionManagement>
+      <repository>
+          <id>github</id>
+          <name>GitHub Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/yoga1290/microkernel-core-system</url>
+      </repository>
+  </distributionManagement>
+</project>
+```
+
++ Another option would be to, clone this repo, and run: `mvn clean install`
 
 ### 2. Maven dependency:
 
@@ -37,7 +52,7 @@ Add `<dependency>` into `pom.xml` of the disered app:
 ```xml
 <dependency>
     <groupId>yoga1290</groupId>
-    <artifactId>core-system</artifactId>
+    <artifactId>microkernel-core-system</artifactId>
     <version>1.0.0</version>
 </dependency>
 <!-- TBA: will add <repository> later on; gonna make use of github maven registry & github actions -->

@@ -1,12 +1,11 @@
 package yoga1290.commons.services;
 
 import com.sun.mail.imap.IMAPFolder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import yoga1290.commons.config.EmailListenerConfig;
 
 import javax.mail.*;
-import javax.mail.event.MessageCountAdapter;
-import javax.mail.event.MessageCountEvent;
 import javax.mail.internet.InternetAddress;
 import javax.mail.search.FlagTerm;
 import java.util.ArrayList;
@@ -31,7 +30,12 @@ public class EmailListenerService implements IService {
         handlerList.add(emailHandler);
     }
 
+    @Async
     public void startListening() {
+        startListening(false);
+    }
+    @Async
+    public void startListening(boolean keepAlive) {
         try {
             Store store = this.emailListenerConfig.getStore();
 
@@ -39,21 +43,44 @@ public class EmailListenerService implements IService {
             inbox.open(Folder.READ_WRITE);
 
             // Create a new thread to keep the connection alive
-            Thread keepAliveThread = new Thread(new KeepAliveRunnable(inbox), "IdleConnectionKeepAlive");
-            keepAliveThread.start();
+//            Thread keepAliveThread = new Thread(new KeepAliveRunnable(inbox), "IdleConnectionKeepAlive");
+//            keepAliveThread.start();
 
-            Message[] messages = inbox.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
+            Message[] messages = inbox.search(new FlagTerm(new Flags(Flags.Flag.RECENT), false));
             System.out.println("messages.length---" + messages.length);
             for (Message message : messages) {
                 try {
                     InternetAddress sender = (InternetAddress) message.getFrom()[0];
 
-                    System.out.println("Sender name : " + sender.getPersonal());
-                    System.out.println("Sender email : " + sender.getAddress());
+//                    System.out.println("Sender name : " + sender.getPersonal());
+//                    System.out.println("Sender email : " + sender.getAddress());
 
                     InternetAddress toEmail = (InternetAddress) message.getAllRecipients()[0];
-                    System.out.println("toEmail name : " + toEmail.getPersonal());
-                    System.out.println("toEmail email : " + toEmail.getAddress());
+//                    System.out.println("toEmail name : " + toEmail.getPersonal());
+//                    System.out.println("toEmail email : " + toEmail.getAddress());
+
+                    for (AbstractEmailHandler emailHandler: handlerList) {
+                        boolean hasSenderPattern = emailHandler.getSenderPattern() != null;
+                        boolean hasReceiverPattern = emailHandler.getRecieverPattern() != null;
+                        boolean hasTopicPattern = emailHandler.getTopicPattern() != null;
+                        boolean hasAnyFilter = hasSenderPattern || !hasReceiverPattern || hasTopicPattern;
+
+                        boolean hasMatchSender = hasSenderPattern && sender.getAddress().matches(emailHandler.getSenderPattern());
+                        boolean hasMatchReceiver = hasReceiverPattern && toEmail.getAddress().matches(emailHandler.getRecieverPattern());
+                        boolean hasMatchTopic = hasTopicPattern && message.getSubject().matches(emailHandler.getTopicPattern());
+
+//                        System.out.println("hasAnyFilter "+ hasAnyFilter);
+//                        System.out.println("hasMatchSender "+ hasMatchSender);
+//                        System.out.println("hasMatchReceiver "+ hasMatchReceiver);
+                        if (hasAnyFilter) {
+                            boolean hasAnyMatch = hasMatchSender || hasMatchReceiver || hasMatchTopic;
+                            if (hasAnyMatch) {
+                                emailHandler.handleMessage(message);
+                            }
+                        } else {
+                            emailHandler.handleMessage(message);
+                        }
+                    }
 
                 } catch (Exception e) {}
             }
@@ -82,7 +109,7 @@ public class EmailListenerService implements IService {
 //        });
 
             // Start the IDLE Loop
-            while (!Thread.interrupted()) {
+            while (!Thread.interrupted() && keepAlive) {
                 try {
                     System.out.println("Starting IDLE");
                     inbox.idle();
@@ -96,9 +123,9 @@ public class EmailListenerService implements IService {
             }
 
             // Interrupt and shutdown the keep-alive thread
-            if (keepAliveThread.isAlive()) {
-                keepAliveThread.interrupt();
-            }
+//            if (keepAliveThread.isAlive()) {
+//                keepAliveThread.interrupt();
+//            }
         } catch (MessagingException e) {
             e.printStackTrace();
         }

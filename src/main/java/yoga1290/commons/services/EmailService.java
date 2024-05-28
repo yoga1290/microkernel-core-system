@@ -24,15 +24,14 @@ public class EmailService implements IService {
     }
 
     @Async
-    public void sendHTMLEmail(String emailTo, Map contextMDC) throws MessagingException, UnsupportedEncodingException {
+    public void sendHTMLEmail(String emailTo, String subject, String htmlMsg, Map contextMDC) throws MessagingException, UnsupportedEncodingException {
         MDC.setContextMap(contextMDC);
         MimeMessage mimeMessage = emailServiceConfig.getMailSender().createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
-        String htmlMsg = "<h3>Hello World!</h3>";
         //mimeMessage.setContent(htmlMsg, "text/html"); /** Use this or below line **/
         helper.setText(htmlMsg, true); // Use this or above line.
         helper.setTo(emailTo);
-        helper.setSubject("This is the test message for testing gmail smtp server using spring mail");
+        helper.setSubject(subject);
         helper.setFrom(this.emailServiceConfig.getEmail(), this.emailServiceConfig.getDisplayName());
         emailServiceConfig.getMailSender().send(mimeMessage);
     }

@@ -51,34 +51,62 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         // Get authorization header and validate
         final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (isEmpty(header) || !header.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
-            return;
+        boolean hasAuthHeader = !isEmpty(header) && header.startsWith("Bearer ");
+
+        UserDetails userDetails;
+        if (hasAuthHeader) {
+            final String token = header.split(" ")[1].trim();
+            userDetails = jwtTokenUtil.userDetailsByJWT(token);
+            //TODO: MDC.put(.., ..)
+        } else {
+            userDetails = jwtTokenUtil.userDetailsByJWT(null);
         }
 
+
+//        System.out.println(">>>>>>>>>>> JwtRequestFilter.userDetails "+userDetails.toString());
+//        AnonymousAuthenticationToken authentication = new AnonymousAuthenticationToken(
+//                                                            userDetails.toString(),
+//                                                            userDetails,
+//                                                            userDetails.getAuthorities());
+
+//        AnonymousAuthenticationToken authentication = new AnonymousAuthenticationToken(
+//                userDetails.toString(),
+//                userDetails,
+//                userDetails.getAuthorities());
+
+//        if (!hasAuthHeader) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
+
         // Get jwt token and validate
-        final String token = header.split(" ")[1].trim();
-        if (!jwtTokenUtil.validate(token)) {
-            chain.doFilter(request, response);
-            return;
-        }
+//        final String token = header.split(" ")[1].trim();
+//        if (!jwtTokenUtil.validate(token)) {
+//            chain.doFilter(request, response);
+//            return;
+//        }
         //TODO: handle expired tokens
 
         // Get user identity and set it on the spring security context
-        UserDetails userDetails = userDetailsService
-                .loadUserByUsername(jwtTokenUtil.getUsername(token));
+//        UserDetails userDetails = userDetailsService
+//                .loadUserByUsername(jwtTokenUtil.getUsername(token));
 
-        AnonymousAuthenticationToken authentication = new AnonymousAuthenticationToken(null, userDetails, userDetails.getAuthorities());
-//        UsernamePasswordAuthenticationToken
-//                authentication = new UsernamePasswordAuthenticationToken(
-//                userDetails, null,
-//                userDetails == null ?
-//                        List.of() : userDetails.getAuthorities()
-//        );
+
+
+//        AnonymousAuthenticationToken authentication = new AnonymousAuthenticationToken(null,
+//                userDetails, userDetails.getAuthorities());
+
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                                                    userDetails, null,
+                                                                    userDetails.getAuthorities()
+        );
+
+
         authentication.setDetails(
                 new WebAuthenticationDetailsSource().buildDetails(request)
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         chain.doFilter(request, response);
     }
 

@@ -62,7 +62,10 @@ public abstract class AbstractClientRequestService<RequestT extends  Object, Res
         this.restTemplate = restTemplate;
     }
 
-    ResponseEntity<ResponseT> doPost(RequestT requestT) throws RestClientResponseException {
+    public ResponseEntity<ResponseT> doPost(RequestT requestT) {
+        return doPost(this.requestUrl, requestT);
+    }
+    public ResponseEntity<ResponseT> doPost(final String requestUrl, RequestT requestT) throws RestClientResponseException {
         String logStr;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
@@ -101,6 +104,43 @@ public abstract class AbstractClientRequestService<RequestT extends  Object, Res
                                 BAD_REQUEST.name(),
                                 responseEntity.getHeaders(),
                                 responseEntity.getBody().toString().getBytes(), null);
+            }
+        }
+
+        return responseEntity;
+    }
+
+    public ResponseEntity<ResponseT> doGet(final String requestUrl) throws RestClientResponseException {
+        String logStr;
+
+        HttpEntity<RequestT> entity = new HttpEntity<>(null, createHeaders());
+        logStr = String.format("requestUrl: %s | HttpEntity: %s", requestUrl, entity);
+        log.info(logStr);
+
+        ResponseEntity<ResponseT> responseEntity =
+                restTemplate.exchange(requestUrl, HttpMethod.POST, entity, (Class<ResponseT>) responseT.getClass());
+        logStr = String.format("requestUrl: %s | HttpEntity: %s | ResponseEntity: %s",
+                requestUrl, entity, responseEntity);
+        log.info(logStr);
+
+        boolean hasResponseBody = responseEntity.getBody() != null;
+        if (hasResponseBody) {
+            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+            Validator validator = factory.getValidator();
+            Set<ConstraintViolation<ResponseT>> responseViolations = validator.validate(responseEntity.getBody());
+            boolean hasViolations = !responseViolations.isEmpty();
+            String exceptionStr = "";
+            for (ConstraintViolation violation : responseViolations) {
+                logStr = String.format("%s %s", violation.getPropertyPath().toString(), violation.getMessage());
+                exceptionStr += logStr;
+                log.warn(logStr);
+            }
+            if (hasViolations) {
+                throw new RestClientResponseException(exceptionStr,
+                        BAD_REQUEST.value(),
+                        BAD_REQUEST.name(),
+                        responseEntity.getHeaders(),
+                        responseEntity.getBody().toString().getBytes(), null);
             }
         }
 

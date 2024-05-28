@@ -3,25 +3,19 @@ package yoga1290.commons.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import yoga1290.commons.exceptions.Unauthorized;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 @Slf4j
@@ -47,7 +41,21 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        http = http.cors().and().csrf().disable();
+//        http = http.cors().and().csrf().disable();
+        http = http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
+            @Override
+            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
+                httpSecurityCorsConfigurer.disable();
+            }
+        });
+
+        http = http.csrf(new Customizer<CsrfConfigurer<HttpSecurity>>() {
+            @Override
+            public void customize(CsrfConfigurer<HttpSecurity> httpSecurityCsrfConfigurer) {
+                httpSecurityCsrfConfigurer.disable();
+            }
+        });
+
         handleException(http);
         setStateless(http);
 
@@ -66,17 +74,17 @@ public class WebSecurityConfig {
         try {
             List<String> roles = webSecurityProperties.getRoles();
             System.out.println("====== ROLES: " + roles.toString());
-            http.authorizeHttpRequests(new AuthorizationManagerRequestMatcherRegistry(roles));
+            http = http.authorizeHttpRequests(new AuthorizationManagerRequestMatcherRegistry(roles));
         } catch(Exception e) {
             log.warn(e.getMessage());
         }
 //        expressionInterceptUrlRegistry.anyRequest().authenticated();
 
 
-        // Add JWT token filter
+//      Add JWT token filter
         http.addFilterBefore(
                 jwtRequestFilter,
-                UsernamePasswordAuthenticationFilter.class
+                AuthorizationFilter.class
         );
 
         return http.build();
@@ -87,26 +95,19 @@ public class WebSecurityConfig {
         private final List<String> roles;
         public AuthorizationManagerRequestMatcherRegistry(List<String> roles) {
             this.roles = roles;
-            System.out.println("1111 ====== ROLES: " + this.roles.toString());
         }
 
         @Override
         public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorizationManagerRequestMatcherRegistry) {
-//            authorizationManagerRequestMatcherRegistry.requestMatchers("/api/public/**").permitAll();
             try {
                 log.info("22222 roles: ", this.roles.toString());
                 System.out.println("22222 ====== ROLES: " + this.roles.toString());
 
                 for (String roleItemStr : roles) {
                     try {
-                        System.out.println("=======roleItemStr: "+ roleItemStr);
                         String[] roleItem = roleItemStr.split(",");
                         String role = roleItem[0];
                         String uri = roleItem[1];
-
-
-                        System.out.println("=======uri: "+ uri);
-
 
                         boolean isPublicRole = "PUBLIC".equals(role);
                         if (isPublicRole) {
@@ -115,9 +116,10 @@ public class WebSecurityConfig {
                             authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasRole(role);
                         }
                     } catch (Exception e) {
-                        log.error("bad <role,uri> pair format", e);
+                        log.error("bad <role,uri> pair format in \""+ roleItemStr +"\"", e);
                     }
                 }
+                authorizationManagerRequestMatcherRegistry.requestMatchers("/public/**").permitAll();
             } catch(Exception e) {
                 log.warn(e.getMessage());
             }
@@ -179,28 +181,53 @@ public class WebSecurityConfig {
     private void setStateless(HttpSecurity http) throws Exception {
         // Set session management to stateless
         http = http
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and();
+                .sessionManagement(new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
+                    @Override
+                    public void customize(SessionManagementConfigurer<HttpSecurity> httpSecuritySessionManagementConfigurer) {
+                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                    }
+                });
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and();
     }
 
     private void handleException(HttpSecurity http) throws Exception {
         // Set unauthorized requests exception handler
         http = http
-                .exceptionHandling()
-                .authenticationEntryPoint(
-                        (request, response, ex) -> {
+                .exceptionHandling(new Customizer<ExceptionHandlingConfigurer<HttpSecurity>>() {
 
-                            String logStr = String.format("request: %s", request.toString());
-                            System.out.println(logStr);
-                            throw new Unauthorized(ex);
-//                            response.sendError(
-//                                    HttpServletResponse.SC_UNAUTHORIZED,
-//                                    ex.getMessage()
-//                            );
-                        }
-                )
-                .and();
+                    @Override
+                    public void customize(ExceptionHandlingConfigurer<HttpSecurity> httpSecurityExceptionHandlingConfigurer) {
+                        httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(
+                                        (request, response, ex) -> {
+
+                                            String logStr = String.format("request: %s", request.toString());
+//                                            System.out.println(logStr);
+                                            log.error(logStr);
+                                    throw new Unauthorized(ex); //TODO
+        //                            response.sendError(
+        //                                    HttpServletResponse.SC_UNAUTHORIZED,
+        //                                    ex.getMessage()
+        //                            );
+                                        }
+                                );
+                    }
+                });
+
+//                .exceptionHandling()
+//                .authenticationEntryPoint(
+//                        (request, response, ex) -> {
+//
+//                            String logStr = String.format("request: %s", request.toString());
+//                            System.out.println(logStr);
+////                            throw new Unauthorized(ex); //TODO
+////                            response.sendError(
+////                                    HttpServletResponse.SC_UNAUTHORIZED,
+////                                    ex.getMessage()
+////                            );
+//                        }
+//                )
+//                .and();
     }
 
     @Bean

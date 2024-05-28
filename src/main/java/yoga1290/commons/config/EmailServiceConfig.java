@@ -1,7 +1,9 @@
 package yoga1290.commons.config;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,6 +11,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import java.util.Properties;
 
+@Slf4j
 @Configuration
 public class EmailServiceConfig {
 
@@ -39,20 +42,29 @@ public class EmailServiceConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(
+            value = "email-service.enable",
+            havingValue = "true")
     public JavaMailSender getMailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
+        JavaMailSenderImpl mailSender = null;
+        try {
+            mailSender = new JavaMailSenderImpl();
+            mailSender.setHost("smtp.gmail.com");
+            mailSender.setPort(587);
 
-        mailSender.setUsername(this.email);
-        mailSender.setPassword(this.password);
+            mailSender.setUsername(this.email);
+            mailSender.setPassword(this.password);
 
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
+            Properties props = mailSender.getJavaMailProperties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+//        props.put("mail.debug", "true");
+        } catch(Exception e) {
+            e.printStackTrace();
 
+            log.error("EmailServiceConfig", e.getMessage());
+        }
         return mailSender;
     }
 

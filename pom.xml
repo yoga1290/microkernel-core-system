@@ -10,9 +10,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>yoga1290</groupId>
-	<artifactId>spring-core-system</artifactId>
+	<artifactId>microkernel-core-system</artifactId>
 	<version>1.0.0</version>
-	<name>microkernel</name>
+	<name>microkernel-core-system</name>
 	<description>Common configurations and setup that can act as a microkernel core to experiments to come; art is never finish</description>
 	<dependencies>
 		<dependency>
@@ -100,12 +100,12 @@
 			<artifactId>spring-aop</artifactId>
 			<version>5.3.22</version>
 		</dependency>
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>1.6.7</version>
-        </dependency>
-
+		<!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
+		<dependency>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
+			<version>2.1.3</version>
+		</dependency>
     </dependencies>
 
 
@@ -114,7 +114,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/yoga1290/spring-core-system</url>
+			<url>https://maven.pkg.github.com/yoga1290/microkernel-core-system</url>
 		</repository>
 	</distributionManagement>
 
