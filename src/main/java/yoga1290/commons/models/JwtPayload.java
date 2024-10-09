@@ -1,13 +1,13 @@
 package yoga1290.commons.models;
 
-import lombok.Builder;
-import lombok.Data;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import lombok.*;
 import java.util.List;
 
 @Data
 @Builder
-public class JwtPayload extends OAuth2ResourceServerProperties.Jwt {
+@NoArgsConstructor
+@AllArgsConstructor
+public class JwtPayload {
 
     List<String> roles;
 

@@ -15,7 +15,7 @@ public class ReCaptchaRequestService
                             @Value("${yoga1290.commons.captcha.secret:}")
                             String secret,
                             RestTemplate restTemplate) {
-        super(restTemplate);
+        super(null, restTemplate);
         this.secret = secret;
     }
 

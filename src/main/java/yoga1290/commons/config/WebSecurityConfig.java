@@ -11,9 +11,6 @@ import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import yoga1290.commons.exceptions.Unauthorized;
 
 import java.util.List;
@@ -230,6 +227,8 @@ public class WebSecurityConfig {
 //                .and();
     }
 
+    // NOTE: I find it better practice is to use @CrossOrigin per endpoint
+    /*
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source =
@@ -242,5 +241,5 @@ public class WebSecurityConfig {
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
-    }
+    }//*/
 }
