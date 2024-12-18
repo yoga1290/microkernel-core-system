@@ -35,9 +35,11 @@ public abstract class AbstractClientRequestService<RequestT extends  Object, Res
     private ResponseT responseT;
 
     public AbstractClientRequestService(String requestUrl,
+                                        ResponseT responseT,
                                         String headerBasicUsername,
                                         String headerBasicPassword,
                                         RestTemplate restTemplate) {
+        this.responseT = responseT;
         this.requestUrl = requestUrl;
         this.restTemplate = restTemplate;
         this.headerBasicUsername = headerBasicUsername;
@@ -45,20 +47,25 @@ public abstract class AbstractClientRequestService<RequestT extends  Object, Res
     }
 
     public AbstractClientRequestService(String requestUrl,
+                                        ResponseT responseT,
                                         String headerBearerToken,
                                         RestTemplate restTemplate) {
+        this.responseT = responseT;
         this.requestUrl = requestUrl;
         this.restTemplate = restTemplate;
         this.headerBearerToken = headerBearerToken;
     }
 
     public AbstractClientRequestService(String requestUrl,
+                                        ResponseT responseT,
                                         RestTemplate restTemplate) {
+        this.responseT = responseT;
         this.requestUrl = requestUrl;
         this.restTemplate = restTemplate;
     }
 
-    public AbstractClientRequestService(RestTemplate restTemplate) {
+    public AbstractClientRequestService(ResponseT responseT, RestTemplate restTemplate) {
+        this.responseT = responseT;
         this.restTemplate = restTemplate;
     }
 
@@ -113,12 +120,12 @@ public abstract class AbstractClientRequestService<RequestT extends  Object, Res
     public ResponseEntity<ResponseT> doGet(final String requestUrl) throws RestClientResponseException {
         String logStr;
 
-        HttpEntity<RequestT> entity = new HttpEntity<>(null, createHeaders());
+        HttpEntity<RequestT> entity = new HttpEntity<>(createHeaders());
         logStr = String.format("requestUrl: %s | HttpEntity: %s", requestUrl, entity);
         log.info(logStr);
 
         ResponseEntity<ResponseT> responseEntity =
-                restTemplate.exchange(requestUrl, HttpMethod.POST, entity, (Class<ResponseT>) responseT.getClass());
+                restTemplate.exchange(requestUrl, HttpMethod.GET, entity, (Class<ResponseT>) responseT.getClass());
         logStr = String.format("requestUrl: %s | HttpEntity: %s | ResponseEntity: %s",
                 requestUrl, entity, responseEntity);
         log.info(logStr);

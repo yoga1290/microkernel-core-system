@@ -1,9 +1,11 @@
 package yoga1290.commons.config;
 
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.servlet.server.Encoding;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -12,6 +14,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import java.util.Properties;
 
 @Slf4j
+@ToString
 @Configuration
 public class EmailServiceConfig {
 
@@ -19,7 +22,7 @@ public class EmailServiceConfig {
     private String email;
     @Getter
     private String displayName;
-    @Getter
+//    @Getter
     private JavaMailSender mailSender;
     private String password;
 
@@ -54,17 +57,18 @@ public class EmailServiceConfig {
 
             mailSender.setUsername(this.email);
             mailSender.setPassword(this.password);
-
+            mailSender.setDefaultEncoding("UTF-16");
             Properties props = mailSender.getJavaMailProperties();
             props.put("mail.transport.protocol", "smtp");
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");
-//        props.put("mail.debug", "true");
+        props.put("mail.debug", "true");
         } catch(Exception e) {
             e.printStackTrace();
 
             log.error("EmailServiceConfig", e.getMessage());
         }
+        System.out.println("TODO ===========>" + mailSender.toString());
         return mailSender;
     }
 

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.scheduling.annotation.Async;
 
-import javax.mail.Message;
+import jakarta.mail.Message;
 
 public abstract class AbstractEmailHandler {
 
