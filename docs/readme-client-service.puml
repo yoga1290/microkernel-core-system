@@ -1,0 +1,48 @@
+@startuml
+
+hide empty fields
+hide empty methods
+
+package "Spring App/Microservice" as PluginApp {
+
+
+  package "Your Plugin package" as PluginPackage {
+
+    class RequestService <RequestPayload, ResponsePayload> {
+      - bearerAuthToken: string
+      - basicAuthPassword: string
+      - basicAuthPassword: string
+      - requestURL: string
+    }
+  }
+
+  package "Core System (dependency)" as CoreSystem {
+
+    abstract AbstractClientRequestService <RequestPayload, ResponsePayload> {
+      + doRequest(RequestPayload): ResponsePayload
+      + doJakartaBeanValidation() throws RestClientResponseException
+    }
+
+    package "Health Check/Indicators (Actuator)" as Health {}
+    package "AOP Logging" as logger {}
+    package "Thread Pool" as threadpool {}
+    package "RestTemplate" {}
+    package "Web Security" as WSecurity {
+      class JwtRequestFilter {}
+    }
+  }
+
+  AbstractClientRequestService ..> logger
+  AbstractClientRequestService --o "RestTemplate"
+  AbstractClientRequestService --o threadpool
+  Health ..> logger
+
+  RequestService ..|>  AbstractClientRequestService
+
+}
+
+database "app.properties" as config {
+}
+config ..> PluginPackage
+
+@enduml

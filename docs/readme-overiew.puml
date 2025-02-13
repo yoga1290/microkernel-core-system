@@ -1,0 +1,46 @@
+@startuml
+
+hide empty fields
+hide empty methods
+
+
+
+package "Your Microservice (Spring App)" as PluginApp {
+
+  package "Your Plugin package" as PluginPackage {
+  }
+
+  package "Core System (dependency)" as CoreSystem {
+
+    abstract AbstractClientRequestService <RequestPayload, ResponsePayload> {
+    }
+    abstract AbstractEmailHandler
+    class EmailListenerService
+    package "Health Check/Indicators (Actuator)" as Health {}
+    package "AOP Logging" as logger {}
+    package "Thread Pool" as threadpool {}
+    package "RestTemplate" {}
+    package "Web Security" as WSecurity {
+      class JwtRequestFilter {}
+    }
+
+  }
+
+  AbstractClientRequestService ..> logger
+  AbstractClientRequestService --o "RestTemplate"
+  AbstractClientRequestService --o threadpool
+  AbstractEmailHandler --o threadpool
+  AbstractEmailHandler ..> logger
+  Health ..> logger
+
+}
+
+database "app.properties" as config {
+}
+
+config .down.> PluginApp
+
+PluginPackage ..|> CoreSystem
+EmailListenerService --o AbstractEmailHandler
+
+@enduml

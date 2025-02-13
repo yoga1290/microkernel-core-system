@@ -1,0 +1,45 @@
+@startuml
+
+hide empty fields
+hide empty methods
+
+
+
+package "Your Microservice (Spring App)" as PluginApp {
+
+  package "Your Plugin package" as PluginPackage {
+  }
+
+  package "Core System (dependency)" as CoreSystem {
+
+  }
+
+}
+
+database "app.properties" as config {
+   json Security {
+    "security.roles.[]": "<ROLE>, <URI-1>, <URI-2>,.."
+   }
+
+   json "Thread Pool" as ThreadPool {
+    "thread-pool.core-pool-size": "INT",
+    "thread-pool.max-pool-size": "INT",
+    "thread-pool.queue-capacity": "INT"
+   }
+
+   json Logger {
+    "..log-pattern": "STRING",
+    "..max-file-size": "INT",
+    "..total-size-cap": "INT"
+   }
+
+   json "Email Sender/Listener" as EmailConfig {
+    "email-service.email": "STRING",
+    "email-service.password": "STRING"
+   }
+}
+
+config .down.> PluginApp
+PluginPackage ..|> CoreSystem
+
+@enduml

@@ -51,6 +51,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             final String token = header.split(" ")[1].trim();
             userDetails = jwtTokenUtil.userDetailsByJWT(token);
             //TODO: MDC.put(.., ..)
+            response.setHeader(HttpHeaders.AUTHORIZATION, token);
         } else {
             userDetails = jwtTokenUtil.userDetailsByJWT(null);
         }

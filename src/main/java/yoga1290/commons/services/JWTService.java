@@ -80,13 +80,12 @@ public class JWTService {
                     .username("TODO") //TODO
                     .password("")
                     .build();
-        System.out.println("guestUserDetails: "+ guestUserDetails.toString());
         return guestUserDetails;
     }
 
     public String issueJWT(String... roles) throws JsonProcessingException {
-        JwtPayload jwtPayload = new JwtPayload();
-        jwtPayload.setRoles(List.of(roles));
+        JwtPayload jwtPayload = JwtPayload.builder()
+                                    .roles(List.of(roles)).build();
         String payloadStr = new ObjectMapper().writeValueAsString(jwtPayload);
 
         String jwtToken = Jwts.builder()
