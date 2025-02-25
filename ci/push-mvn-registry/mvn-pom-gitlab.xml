@@ -1,0 +1,5 @@
+<distributionManagement>
+    <repository>
+        <id>gitlab</id>
+        <url>https://gitlab.com/api/v4/projects/$GITLAB_PROJECT_ID/packages/maven</url>
+    </repository>

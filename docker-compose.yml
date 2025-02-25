@@ -1,0 +1,15 @@
+services:
+
+  # docker compose up --build deploy
+  deploy:
+
+    build:
+      context: ./ci/push-mvn-registry
+      dockerfile: Dockerfile
+
+    environment:
+      MVN_PROFILE: github|gitlab
+      GITLAB_PROJECT_ID: X123
+      GIT_REPOSITORY_NAME: spring-core-system
+      USERNAME: yoga1290
+      ACCESS_TOKEN: ${CI_JOB_TOKEN}

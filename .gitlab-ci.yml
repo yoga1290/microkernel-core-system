@@ -1,0 +1,22 @@
+stages:
+  - build
+  - test
+  - deploy
+
+default:
+  image: alpine
+
+build_and_push_mvn_package:
+  image: maven:3.9.6-eclipse-temurin-21-alpine
+  stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  variables:
+    MVN_PROFILE: gitlab
+    GITLAB_PROJECT_ID: 67101861
+    GIT_REPOSITORY_NAME: spring-core-system
+    USERNAME: yoga1290
+    ACCESS_TOKEN: ${CI_JOB_TOKEN}
+#    DOCKER_FILE: ".//ci/push-mvn-registry/Dockerfile"
+  script:
+    - /bin/sh +x ./ci/push-mvn-registry/push-mvn-registry.sh

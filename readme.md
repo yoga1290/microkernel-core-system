@@ -113,32 +113,22 @@ logging.logback.rollingpolicy.total-size-cap=${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_
 
 # Usage:
 
-### 1. Install dependency:
+### 1. Install maven dependency:
 
-+ Manually install dependency to local repo via CLI:
-```shell
++ Install from artifact file:
+  + Get the URL of the `microkernel-core-system-X.Y-Z.jar` artifact from the [Package page](https://github.com/yoga1290?tab=packages&repo_name=microkernel-core-system).
+  + Run this:
+```bash
+ARTIFACT_JAR_URL="#TODO artifact URL here";
+curl -o microkernel-core-system-3.3-1.jar $ARTIFACT_JAR_URL;
+
 mvn install:install-file \
-    -Dfile=microkernel-core-system-3.3.2.jar \
-    -DgroupId=yoga1290 \
-    -DartifactId=microkernel-core-system \
-    -Dversion=3.3.2
+   -Dfile=microkernel-core-system-X.Y-Z.jar \
+   -DgroupId=yoga1290 \
+   -DartifactId=microkernel-core-system \
+   -Dversion=X.Y-Z \
+   -Dpackaging=jar
 ```
-
-+ Or, add repository to your `pom.xml`:
-```xml
-<project>
-  <!-- ..... -->
-  <!-- see https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#publishing-a-package -->
-  <distributionManagement>
-      <repository>
-          <id>github</id>
-          <name>GitHub Apache Maven Packages</name>
-          <url>https://maven.pkg.github.com/yoga1290/microkernel-core-system</url>
-      </repository>
-  </distributionManagement>
-</project>
-```
-
 + Another option would be to, clone this repo, and run: `mvn clean install` to install dependency to local `.m2` Maven repository.
 
 ### 2. Add `pom.xml` dependency:
@@ -166,9 +156,19 @@ import yoga1290.commons.ImportCommons;
 
 # CI/CD
 
+The [`push-mvn-registry.sh`](ci/push-mvn-registry/push-mvn-registry.sh) shell script gets triggered, and based on the initiator, whather it is through a **Github Action** or **Gitlab Action**, it make use of the following predefined environment variables to generate the necessary `pom.xml` and `settings.xml` configurations, depending on the `MVN_PROFILE` and executes the `mvn clean install deploy` on a docker container:
+
++ `MVN_PROFILE` (github|gitlab)
++ `USERNAME`
++ `GIT_REPOSITORY_NAME`
++ `ACCESS_TOKEN`
+
 ### GitHub Actions
-+ Currently I have a Github Action that triggers [`push-mvn-registry.sh`](ci/push-mvn-registry/push-mvn-registry.sh) per `master` push, which build the Maven dependency and then pushes it to GitHub-hosted Maven registry using a Docker container.
++ Entry point: [`.github/workflows/main_workflow.yml`](.github/workflows/main_workflow.yml)
 + Maven dependency gets published in the repo's [Package page](https://github.com/yoga1290?tab=packages&repo_name=microkernel-core-system)
+
+### GitLab Actions
++ Entry point: [`.gitlab-ci.yml`](.gitlab-ci.yml)
 
 # References:
 

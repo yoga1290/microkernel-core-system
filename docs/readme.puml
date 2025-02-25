@@ -60,7 +60,43 @@ database "app.properties (or Env Var)" as config {
     "security.roles.[]": "<ROLE>, <URI-1>, <URI-2>,.."
    }
 
-   json "Thread Pool" as ThreadPool {
+   json "Th
+@Service
+public class RecaptchClientService extends AbstractClientRequestService<RecaptchRequest, RecaptchResponse> {
+
+
+    private String apiKey;
+    private String siteKey;
+    public RecaptchClientService(
+            @Value("${yoga1290.client-service.recaptcha-api-key:}")
+            String apiKey,
+            @Value("${yoga1290.client-service.recaptcha-site-key:}")
+            String siteKey,
+            RestTemplate restTemplate) {
+        super(new RecaptchResponse(), restTemplate);
+        this.apiKey = apiKey;
+        this.siteKey = siteKey;
+    }
+
+    public ResponseEntity<RecaptchResponse> doVerify(final String verifyToken) {
+        // SEE https://console.cloud.google.com/security/recaptcha
+
+        String requestUrl = String.format(
+                            "https://recaptchaenterprise.googleapis.com/v1/projects/videoquotes/assessments?key=%s",
+                                   apiKey);
+
+        RecaptchRequest.Event recaptchRequestEvent =
+                                        RecaptchRequest.Event.builder()
+                                            .token(verifyToken)
+                                            .siteKey(siteKey).build();
+        RecaptchRequest recaptchRequest =
+                                        RecaptchRequest.builder()
+                                            .event(recaptchRequestEvent).build();
+
+        return this.doPost(requestUrl, recaptchRequest);
+    }
+
+}read Pool" as ThreadPool {
     "thread-pool.core-pool-size": "INT",
     "thread-pool.max-pool-size": "INT",
     "thread-pool.queue-capacity": "INT"

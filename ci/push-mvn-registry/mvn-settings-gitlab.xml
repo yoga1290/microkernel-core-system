@@ -6,34 +6,33 @@
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
 
     <activeProfiles>
-        <activeProfile>github</activeProfile>
+        <activeProfile>gitlab</activeProfile>
     </activeProfiles>
 
     <profiles>
         <profile>
-            <id>github</id>
+            <id>gitlab</id>
             <repositories>
                 <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2/</url>
-                </repository>
-
-                <repository>
-                    <id>github</id>
-                    <url>https://maven.pkg.github.com/$GITHUB_REPOSITORY</url>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
                 </repository>
             </repositories>
         </profile>
     </profiles>
 
     <servers>
+        <!-- https://docs.gitlab.com/user/packages/maven_repository/#custom-http-header  -->
         <server>
-            <id>github</id>
-            <username>$GITHUB_OWNER</username>
-            <password>$GITHUB_TOKEN</password>
+            <id>gitlab</id>
+            <configuration>
+                <httpHeaders>
+                    <property>
+                        <name>Job-Token</name>
+                        <value>${CI_JOB_TOKEN}</value>
+                    </property>
+                </httpHeaders>
+            </configuration>
         </server>
     </servers>
 </settings>
