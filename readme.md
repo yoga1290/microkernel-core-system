@@ -1,22 +1,31 @@
 # Whats this?
 
-Spring module to be used as dependency that pre-configures and initializes commonly used configurations and services.
-This would same boilerplate configuration as well as unify the logging mechanisim, making it easiser for log monitoring tools. 
 
+Spring module to be used as dependency that pre-configures and initializes commonly used configurations and services.
+This would same boilerplate configuration as well as unify the logging mechanisim, making it easiser for log monitoring tools.
+
+---
+
+# Outline
+
++ [Overview](#overview)
+  + [Authentication & Authorization](#authentication--authorization)
+  + [HTTP Clients Services](#http-clients-services)
+  + [Email Sender/Listener Service](#email-senderlistener-service)
+  + [ThreadPool](#threadpool)
+  + [API and Service Logging](#api-and-service-logging)
++ [Usage](#usage)
+  + [Install maven dependency](#1-install-maven-dependency)
+  + [Add `pom.xml` dependency](#2-add-pomxml-dependency)
+  + [Setup & Import Configurations](#3-setup--import-configurations)
++ [CI/CD](#cicd)
+  + [GitHub Actions](#github-actions)
+  + [GitLab Actions](#gitlab-actions)
++ [Resolved Issues & References](#references)
 
 # Overview
 
 [![docs/readme-overview.png](docs/readme-overview.png)](docs/readme-overview.puml)
-
-[![docs/readme.png](docs/readme.png)](docs/readme.puml)
-
-
-+ API and Service Logging
-+ Thread Pool
-+ HTTP Client Service
-+ Email Sender & Listener Service
-+ API Authentication & Authorization
-+ Enables Spring Auctator and logs the Health Indicators
 
 ---
 
@@ -113,7 +122,7 @@ logging.logback.rollingpolicy.total-size-cap=${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_
 
 # Usage:
 
-### 1. Install maven dependency:
+### 1. Install maven dependency
 
 + Install from artifact file:
   + Get the URL of the `microkernel-core-system-X.Y-Z.jar` artifact from the [Package page](https://github.com/yoga1290?tab=packages&repo_name=microkernel-core-system).
@@ -131,7 +140,7 @@ mvn install:install-file \
 ```
 + Another option would be to, clone this repo, and run: `mvn clean install` to install dependency to local `.m2` Maven repository.
 
-### 2. Add `pom.xml` dependency:
+### 2. Add `pom.xml` dependency
 
 Add `<dependency>` into `pom.xml` of the disered app:
 ```xml
@@ -170,7 +179,7 @@ The [`push-mvn-registry.sh`](ci/push-mvn-registry/push-mvn-registry.sh) shell sc
 ### GitLab Actions
 + Entry point: [`.gitlab-ci.yml`](.gitlab-ci.yml)
 
-# References:
+# References
 
 + [Spring | Custom Logs Configuration](https://docs.spring.io/spring-boot/docs/3.2.x/reference/htmlsingle/#features.logging.custom-log-configuration)
 + [Baeldung | Guide to Spring Email](https://www.baeldung.com/spring-email)
