@@ -34,7 +34,7 @@ This would same boilerplate configuration as well as unify the logging mechanisi
 + Regarding Authorization, `JwtRequestFilter` is a `OncePerRequestFilter` that verifies that every request has a URI that maps to either `PUBLIC` role, or to one of the `roles` of the [`JWTPayload`](src/main/java/models/JwtPayload)
    + Mapping URIs to ROLEs are done through the app properties, in the following format: ```` 
 + Regarding Authentication, `JWTService` will be injected into the Plugin component, so the plugin controller or whatsoever service can handle issuing and/or verification of the JWT tokens without much implementation.
-+ JWT Key is set using app property: `yoga1290.commons.jwt.secret`
++ JWT Key is set using app property: `yoga1290.coresystem.jwt.secret`
 
 ### HTTP Clients Services
 
@@ -93,10 +93,10 @@ email-service.password=... # GMail App-Password if 2MF is set.
 
 ```properties
 ################ THREAD-POOL ##############
-yoga1290.commons.thread-pool.core-pool-size=50
-yoga1290.commons.thread-pool.max-pool-size=50
-yoga1290.commons.thread-pool.queue-capacity=10
-yoga1290.commons.thread-pool.thread-name-prefix=thread-
+yoga1290.coresystem.thread-pool.core-pool-size=50
+yoga1290.coresystem.thread-pool.max-pool-size=50
+yoga1290.coresystem.thread-pool.queue-capacity=10
+yoga1290.coresystem.thread-pool.thread-name-prefix=thread-
 ```
 
 ### API and Service Logging
@@ -155,11 +155,12 @@ Add `<dependency>` into `pom.xml` of the disered app:
 ### 3. Setup & Import Configurations:
 
 To scan the required components/package, you will need to add this entrypoint class:
+
 ```java
-import yoga1290.commons.ImportCommons;
+import yoga1290.coresystem.ImportCommons;
 //...
 @SpringBootApplication
-@Import({ ImportCommons.class})
+@Import({ImportCommons.class})
 //..
 ```
 

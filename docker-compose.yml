@@ -1,15 +1,25 @@
 services:
 
-  # docker compose up --build deploy
-  deploy:
-
-    build:
-      context: ./ci/push-mvn-registry
-      dockerfile: Dockerfile
-
+  build:
+    image: maven:3.9.6-eclipse-temurin-21-alpine
     environment:
-      MVN_PROFILE: github|gitlab
-      GITLAB_PROJECT_ID: X123
-      GIT_REPOSITORY_NAME: spring-core-system
+      MVN_PROFILE: github
+      GIT_REPOSITORY_NAME: microkernel-core-system
       USERNAME: yoga1290
-      ACCESS_TOKEN: ${CI_JOB_TOKEN}
+      ACCESS_TOKEN: ${GITHUB_TOKEN}
+    command: /bin/sh +x ./ci/push-mvn-registry/mvn-install.sh
+    working_dir: /usr/app
+    volumes:
+      - ./:/usr/app
+
+  deploy-mvn-registry:
+    image: maven:3.9.6-eclipse-temurin-21-alpine
+    environment:
+      MVN_PROFILE: github
+      GIT_REPOSITORY_NAME: microkernel-core-system
+      USERNAME: yoga1290
+      ACCESS_TOKEN: ${GITHUB_TOKEN}
+    command: /bin/sh +x ./ci/push-mvn-registry/mvn-deploy.sh
+    working_dir: /usr/app
+    volumes:
+      - ./:/usr/app

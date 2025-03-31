@@ -3,4 +3,4 @@ M2_SETTINGS_OUTPUT="${M2_SETTINGS_OUTPUT:=./}"
 
 sh +x "${CI_DIR_PATH}/mvn-install.sh"
 
-mvn deploy -s "${M2_SETTINGS_OUTPUT}/settings.xml" -DskipTests
+mvn deploy -X -s "${M2_SETTINGS_OUTPUT}/settings.xml" -DskipTests

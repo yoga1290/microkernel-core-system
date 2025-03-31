@@ -36,7 +36,7 @@
 		</dependency>
 		<!-- Bean Validation API Reference Implementation -->
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>8.0.1.Final</version>
 		</dependency>
@@ -115,24 +115,6 @@
 	<!-- TODO: CI/CD will modify this part -->
 	<!-- see https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#publishing-a-package -->
 	<distributionManagement>
-<!--		<repository>-->
-<!--			<id>github</id>-->
-<!--			<name>GitHub Apache Maven Packages</name>-->
-<!--			<url>https://maven.pkg.github.com/yoga1290/microkernel-core-system</url>-->
-<!--		</repository>-->
-
-<!--		<repository>-->
-<!--			<id>gitlab</id>-->
-<!--			<url>https://gitlab.example.com/api/v4/projects/$GITLAB_PROJECT_ID/packages/maven</url>-->
-<!--		</repository>-->
 	</distributionManagement>
-
-<!--	<repositories>-->
-<!--		&lt;!&ndash; https://docs.gitlab.com/user/packages/maven_repository/#endpoint-urls &ndash;&gt;-->
-<!--		<repository>-->
-<!--			<id>gitlab</id>-->
-<!--			<url>https://gitlab.example.com/api/v4/projects/$GITLAB_PROJECT_ID/packages/maven</url>-->
-<!--		</repository>-->
-<!--	</repositories>-->
 
 </project>
