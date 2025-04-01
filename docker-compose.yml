@@ -12,13 +12,26 @@ services:
     volumes:
       - ./:/usr/app
 
-  deploy-mvn-registry:
+  deploy-mvn-github-registry:
     image: maven:3.9.6-eclipse-temurin-21-alpine
     environment:
       MVN_PROFILE: github
       GIT_REPOSITORY_NAME: microkernel-core-system
       USERNAME: yoga1290
       ACCESS_TOKEN: ${GITHUB_TOKEN}
+    command: /bin/sh +x ./ci/push-mvn-registry/mvn-deploy.sh
+    working_dir: /usr/app
+    volumes:
+      - ./:/usr/app
+
+  deploy-mvn-gitlab-registry:
+    image: maven:3.9.6-eclipse-temurin-21-alpine
+    environment:
+      MVN_PROFILE: gitlab
+      GITLAB_PROJECT_ID: 67101861
+      GIT_REPOSITORY_NAME: microkernel-core-system
+      USERNAME: yoga1290
+      ACCESS_TOKEN: ${GITLAB_TOKEN}
     command: /bin/sh +x ./ci/push-mvn-registry/mvn-deploy.sh
     working_dir: /usr/app
     volumes:

@@ -19,4 +19,4 @@ build_and_push_mvn_package:
     ACCESS_TOKEN: ${CI_JOB_TOKEN}
 #    DOCKER_FILE: ".//ci/push-mvn-registry/Dockerfile"
   script:
-    - /bin/sh +x ./ci/push-mvn-registry/push-mvn-registry.sh
+    - /bin/sh +x ./ci/push-mvn-registry/mvn-deploy.sh
