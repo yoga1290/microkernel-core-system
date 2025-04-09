@@ -23,20 +23,20 @@ public class JWTService {
 
     private SecretKey secretKey;
     private ObjectMapper objectMapper;
+    private Long expiry = 15 * 60 * 1000L;
 
     //TODO:
     @Setter
     private IjwtValidator ijwtValidator = null;
 
-    public JWTService(ObjectMapper objectMapper,
+    public JWTService(
                @Value("${yoga1290.coresystem.jwt.secret:}")
-               String secret) {
-        this.objectMapper = objectMapper;
-        boolean hasNoSecret = secret == null || secret.isEmpty();
-        if (hasNoSecret) {
-            secret = "JWTSECRET123JWTSECRET123JWTSECRET123JWTSECRET123";
-        }
+               String secret,
+               @Value("${yoga1290.coresystem.jwt.exp:900000}")
+               Long expiry) {
         this.secretKey = mapSecretB64StringToSecretKey(secret);
+        this.expiry = expiry;
+        this.objectMapper = new ObjectMapper();
     }
 
     private JwtPayload parseJWToken(String jwtToken) throws IOException {
@@ -66,11 +66,17 @@ public class JWTService {
             try {
                 JwtPayload jwtPayload = parseJWToken(jwtToken);
                 List<String> userRoles = jwtPayload.getRoles();
-                return User.builder()
-                        .username(jwtPayload.getUserEmail())
-                        .roles(String.valueOf(userRoles))
-                        .authorities(AuthorityUtils.createAuthorityList(userRoles))
-                        .build();
+
+                boolean hasUnexpiredToken = null != jwtPayload.getExp() &&
+                                      System.currentTimeMillis() <= jwtPayload.getExp();
+                if (hasUnexpiredToken) {
+                    return User.builder()
+                            .username(jwtPayload.getUserEmail())
+                            .roles(String.valueOf(userRoles))
+                            .authorities(AuthorityUtils.createAuthorityList(userRoles))
+                            .build();
+
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             }

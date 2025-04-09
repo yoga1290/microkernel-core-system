@@ -24,7 +24,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private final JWTService jwtTokenUtil;
+    private JWTService jwtTokenUtil;
 
     public JwtRequestFilter(JWTService jwtTokenUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
@@ -44,14 +44,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         boolean hasAuthHeader = !isEmpty(header) && header.startsWith("Bearer ");
 
         UserDetails userDetails;
+        String token = null;
         if (hasAuthHeader) {
-            final String token = header.split(" ")[1].trim();
-            userDetails = jwtTokenUtil.userDetailsByJWT(token);
-            //TODO: MDC.put(.., ..)
-            response.setHeader(HttpHeaders.AUTHORIZATION, token);
-        } else {
-            userDetails = jwtTokenUtil.userDetailsByJWT(null);
+            token = header.split(" ")[1].trim();
         }
+        userDetails = jwtTokenUtil.userDetailsByJWT(token);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                                                     userDetails, null,
@@ -62,7 +59,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 new WebAuthenticationDetailsSource().buildDetails(request)
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         chain.doFilter(request, response);
     }
 

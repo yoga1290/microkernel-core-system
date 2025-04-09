@@ -12,4 +12,7 @@ public class JwtPayload {
     List<String> roles;
     String userEmail;
 
+    // https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
+    Long exp;
+
 }

@@ -1,7 +1,6 @@
 package yoga1290.coresystem.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,15 +19,15 @@ public class JWTUtilTest {
 
     @BeforeEach
     public void setup() {
-        jwtUtil = new JWTService(new ObjectMapper(), MOCK_SECRET);
+        jwtUtil = new JWTService(MOCK_SECRET, 900000L);
     }
 
     @Test
     public void issueJWT_should_return_valid_JWT_token() throws JsonProcessingException {
 
         final String expectedJWT =  "eyJhbGciOiJIUzI1NiJ9."+
-                                    "eyJyb2xlcyI6WyJQVUJMSUMiXSwidXNlckVtYWlsIjoiY29uZmlybWVkQGVtYWlsLmNvbSJ9." +
-                                    "vCjX5dRukcKv17hcCu0ySeeRPGWZkUXKOn3xJdYhaYc";
+                                    "eyJyb2xlcyI6WyJQVUJMSUMiXSwidXNlckVtYWlsIjoiY29uZmlybWVkQGVtYWlsLmNvbSIsImV4cCI6bnVsbH0."+
+                                    "ZCXaEXQzFLgjo_Jc3Ie5uCrcVc1iYYzntxP5WssAvL8";
 
         String actualJWT = jwtUtil.issueJWT("confirmed@email.com", ROLE_PUBLIC);
         Assertions.assertEquals(expectedJWT, actualJWT);
