@@ -66,7 +66,6 @@ public class WebSecurityConfig {
         }
 //        expressionInterceptUrlRegistry.anyRequest().authenticated();
 
-
 //      Add JWT token filter
         http.addFilterBefore(
                 jwtRequestFilter,

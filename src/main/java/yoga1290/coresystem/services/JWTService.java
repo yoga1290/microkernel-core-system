@@ -78,7 +78,8 @@ public class JWTService {
 
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace(); //TODO
+                System.out.println("userDetailsByJWT: " + e.getMessage());
             }
         }
 
