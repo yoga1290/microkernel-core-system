@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.2</version>
+		<version>3.3.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>yoga1290</groupId>
 	<artifactId>microkernel-core-system</artifactId>
-	<version>3.3-1</version>
+	<version>3.3.3-1</version>
 	<name>microkernel-core-system</name>
 	<description>Common configurations and setup that can act as a microkernel core to experiments to come; art is never finish</description>
 	<dependencies>

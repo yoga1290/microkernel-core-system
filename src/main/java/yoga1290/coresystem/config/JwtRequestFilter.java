@@ -36,6 +36,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
+        log.info(String.format("doFilterInternal | request: %s | response: %s", request, response));
         MDC.put(AOPLoggingConfig.URI, request.getRequestURI());
         MDC.put(AOPLoggingConfig.TRANSACTION_ID, request.getMethod());
 
@@ -49,15 +50,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             token = header.split(" ")[1].trim();
         }
         userDetails = jwtTokenUtil.userDetailsByJWT(token);
+        log.info(String.format("Athenticating user: %s", userDetails));
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                                                     userDetails, null,
                                                                     userDetails.getAuthorities()
         );
 
-        authentication.setDetails(
-                new WebAuthenticationDetailsSource().buildDetails(request)
-        );
+//        authentication.setDetails(
+//                new WebAuthenticationDetailsSource().buildDetails(request)
+//        );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         chain.doFilter(request, response);
