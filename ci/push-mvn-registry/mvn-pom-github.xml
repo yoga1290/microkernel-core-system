@@ -2,5 +2,5 @@
     <repository>
         <id>github</id>
         <name>GitHub Apache Maven Packages</name>
-        <url>https://maven.pkg.github.com/$USERNAME/$GIT_REPOSITORY_NAME</url>
+        <url>https://maven.pkg.github.com/$GIT_REPOSITORY_NAME</url>
     </repository>

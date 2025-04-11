@@ -61,7 +61,7 @@ public class JWTService {
     }
 
     public UserDetails userDetailsByJWT(String jwtToken) {
-        boolean hasJWTToken = jwtToken != null;
+        boolean hasJWTToken = jwtToken != null && !jwtToken.isEmpty();
         if (hasJWTToken) {
             try {
                 JwtPayload jwtPayload = parseJWToken(jwtToken);
@@ -72,7 +72,7 @@ public class JWTService {
                 if (hasUnexpiredToken) {
                     return User.builder()
                             .username(jwtPayload.getUserEmail())
-                            .roles(String.valueOf(userRoles))
+                            .roles(userRoles.toArray(new String[userRoles.size()]))
                             .authorities(AuthorityUtils.createAuthorityList(userRoles))
                             .build();
 

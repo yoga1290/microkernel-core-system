@@ -41,6 +41,7 @@ public class AOPLoggingConfig {
             ret = logAround(joinPoint);
         } catch(Exception e) {
 //            MDC.clear();
+            e.printStackTrace(); //TODO: proper logging
             throw e;
         }
         MDC.clear();

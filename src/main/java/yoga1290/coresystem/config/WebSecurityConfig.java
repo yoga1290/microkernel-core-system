@@ -135,6 +135,7 @@ public class WebSecurityConfig {
                                     String logStr = String.format("request: %s", request.toString());
 //                                            System.out.println(logStr);
                                     log.error(logStr);
+                                    ex.printStackTrace(); //TODO
                                     throw new Unauthorized(ex); //TODO
                                     //                            response.sendError(
                                     //                                    HttpServletResponse.SC_UNAUTHORIZED,
