@@ -1,8 +1,10 @@
 package yoga1290.coresystem.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,7 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import yoga1290.coresystem.exceptions.Unauthorized;
 
 import java.util.List;
@@ -67,13 +70,24 @@ public class WebSecurityConfig {
 //        expressionInterceptUrlRegistry.anyRequest().authenticated();
 
 //      Add JWT token filter
+// see https://github.com/spring-projects/spring-security/blob/15c2b156f19826bcebf4cc8af9e2511d84bb8673/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java#L85C7-L85C34
         http.addFilterBefore(
                 jwtRequestFilter,
-                AuthorizationFilter.class
+                AnonymousAuthenticationFilter.class
+//                SecurityContextHolderFilter.class
+//                UsernamePasswordAuthenticationFilter.class
         );
 
         return http.build();
     }
+
+//    @Bean
+//    public FilterRegistrationBean<JwtRequestFilter> authenticationFilterRegistrationBean() {
+//        FilterRegistrationBean<JwtRequestFilter> registrationBean = new FilterRegistrationBean<>();
+//        registrationBean.setFilter(jwtRequestFilter);
+//        registrationBean.setOrder(1); // Set filter execution order
+//        return registrationBean;
+//    }
 
     class AuthorizationManagerRequestMatcherRegistry implements Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> {
 
@@ -104,7 +118,8 @@ public class WebSecurityConfig {
                 }
                 authorizationManagerRequestMatcherRegistry.requestMatchers("/public/**").permitAll();
             } catch(Exception e) {
-                log.warn(e.getMessage());
+                log.error(String.format("AuthorizationManagerRequestMatcherRegistry | exception: %e",
+                                            e.getMessage()));
             }
         }
     }
@@ -132,10 +147,15 @@ public class WebSecurityConfig {
                         httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(
                                 (request, response, ex) -> {
 
-                                    String logStr = String.format("request: %s", request.toString());
-//                                            System.out.println(logStr);
+                                    String logStr = String.format("Principal: %s | auth type: %s | exception: %s",
+                                                                    request.getUserPrincipal(),
+                                                                    request.getAuthType(),
+                                                                    ex.getMessage());
                                     log.error(logStr);
+
+
                                     ex.printStackTrace(); //TODO
+//                                    response.setStatus(HttpStatus.FORBIDDEN.value());
                                     throw new Unauthorized(ex); //TODO
                                     //                            response.sendError(
                                     //                                    HttpServletResponse.SC_UNAUTHORIZED,

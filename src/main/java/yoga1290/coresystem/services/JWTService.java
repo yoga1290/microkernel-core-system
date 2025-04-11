@@ -7,6 +7,7 @@ import io.jsonwebtoken.impl.DefaultClaims;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -18,12 +19,13 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @Service
 public class JWTService {
 
     private SecretKey secretKey;
     private ObjectMapper objectMapper;
-    private Long expiry = 15 * 60 * 1000L;
+    private Long expiry = 15 * 60 *60 * 1000L;
 
     //TODO:
     @Setter
@@ -32,7 +34,7 @@ public class JWTService {
     public JWTService(
                @Value("${yoga1290.coresystem.jwt.secret:}")
                String secret,
-               @Value("${yoga1290.coresystem.jwt.exp:900000}")
+               @Value("${yoga1290.coresystem.jwt.exp:54000000}")
                Long expiry) {
         this.secretKey = mapSecretB64StringToSecretKey(secret);
         this.expiry = expiry;
@@ -61,26 +63,33 @@ public class JWTService {
     }
 
     public UserDetails userDetailsByJWT(String jwtToken) {
-        boolean hasJWTToken = jwtToken != null && !jwtToken.isEmpty();
-        if (hasJWTToken) {
-            try {
+        try {
+            boolean hasJWTToken = jwtToken != null && !jwtToken.isEmpty();
+            if (hasJWTToken) {
+
                 JwtPayload jwtPayload = parseJWToken(jwtToken);
                 List<String> userRoles = jwtPayload.getRoles();
 
                 boolean hasUnexpiredToken = null != jwtPayload.getExp() &&
-                                      System.currentTimeMillis() <= jwtPayload.getExp();
+                        System.currentTimeMillis() <= jwtPayload.getExp();
+
+                log.info(String.format("userDetailsByJWT | jwtPayload: %s | hasUnexpiredToken: %s",
+                                            jwtPayload, hasUnexpiredToken));
                 if (hasUnexpiredToken) {
                     return User.builder()
                             .username(jwtPayload.getUserEmail())
+                            .password("bypass")
+                            .accountExpired(false)
+                            .credentialsExpired(false)
+                            .accountLocked(false)
                             .roles(userRoles.toArray(new String[userRoles.size()]))
                             .authorities(AuthorityUtils.createAuthorityList(userRoles))
                             .build();
 
                 }
-            } catch (Exception e) {
-                e.printStackTrace(); //TODO
-                System.out.println("userDetailsByJWT: " + e.getMessage());
             }
+        } catch (Exception e) {
+//            log.info(String.format("userDetailsByJWT | %s", e.getMessage()));
         }
 
         UserDetails guestUserDetails = User.builder()
@@ -89,7 +98,7 @@ public class JWTService {
                     .accountExpired(false)
                     .credentialsExpired(false)
                     .accountLocked(false)
-                    .username("TODO") //TODO
+                    .username("ANONYMOUS") //TODO
                     .password("")
                     .build();
         return guestUserDetails;
@@ -98,6 +107,7 @@ public class JWTService {
     public String issueJWT(String userEmail, String... roles) throws JsonProcessingException {
         JwtPayload jwtPayload = JwtPayload.builder()
                                     .userEmail(userEmail)
+                                    .exp(expiry + System.currentTimeMillis())
                                     .roles(List.of(roles)).build();
         String payloadStr = new ObjectMapper().writeValueAsString(jwtPayload);
 

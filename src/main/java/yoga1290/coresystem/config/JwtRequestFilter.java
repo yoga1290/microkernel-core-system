@@ -3,11 +3,9 @@ package yoga1290.coresystem.config;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import yoga1290.coresystem.services.JWTService;
@@ -50,18 +48,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             token = header.split(" ")[1].trim();
         }
         userDetails = jwtTokenUtil.userDetailsByJWT(token);
-        log.info(String.format("Athenticating user: %s", userDetails));
+        log.info(String.format("Athenticating | user: %s | token: %s", userDetails, token));
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                                                    userDetails, null,
-                                                                    userDetails.getAuthorities()
-        );
+        AnonymousAuthenticationToken authentication = new AnonymousAuthenticationToken(userDetails.getUsername(),
+                                                    userDetails, userDetails.getAuthorities());
+
 
 //        authentication.setDetails(
 //                new WebAuthenticationDetailsSource().buildDetails(request)
 //        );
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        log.info(String.format("doFilterInternal | authType: %s | isAuthenticated: %s | principal: %s | authorities: %s",
+                            request.getAuthType(),
+                            SecurityContextHolder.getContext().getAuthentication().isAuthenticated(),
+                            SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+                            SecurityContextHolder.getContext().getAuthentication().getAuthorities() ));
         chain.doFilter(request, response);
     }
 

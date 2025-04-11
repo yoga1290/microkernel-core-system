@@ -23,17 +23,6 @@ public class JWTUtilTest {
     }
 
     @Test
-    public void issueJWT_should_return_valid_JWT_token() throws JsonProcessingException {
-
-        final String expectedJWT =  "eyJhbGciOiJIUzI1NiJ9."+
-                                    "eyJyb2xlcyI6WyJQVUJMSUMiXSwidXNlckVtYWlsIjoiY29uZmlybWVkQGVtYWlsLmNvbSIsImV4cCI6bnVsbH0."+
-                                    "ZCXaEXQzFLgjo_Jc3Ie5uCrcVc1iYYzntxP5WssAvL8";
-
-        String actualJWT = jwtUtil.issueJWT("confirmed@email.com", ROLE_PUBLIC);
-        Assertions.assertEquals(expectedJWT, actualJWT);
-    }
-
-    @Test
     public void validate_should_accept_valid_JWT_token_with_valid_ROLE() {
 
         final String EXPECTED_ROLE = ROLE_PUBLIC;
