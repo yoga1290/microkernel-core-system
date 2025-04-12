@@ -182,6 +182,8 @@ The [`push-mvn-registry.sh`](ci/push-mvn-registry/push-mvn-registry.sh) shell sc
 
 # References
 
++ [Spring Security | Architecture](https://docs.spring.io/spring-security/reference/servlet/architecture.html)
++ [Spring Security | FilterOrderRegistration](https://github.com/spring-projects/spring-security/blob/15c2b156f19826bcebf4cc8af9e2511d84bb8673/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java#L85C7-L85C34)
 + [Spring | Custom Logs Configuration](https://docs.spring.io/spring-boot/docs/3.2.x/reference/htmlsingle/#features.logging.custom-log-configuration)
 + [Baeldung | Guide to Spring Email](https://www.baeldung.com/spring-email)
 + [Your First Full Stack Application with Angular and Spring Boot](https://github.com/in28minutes/full-stack-with-angular-and-spring-boot#core-jwt-components---spring-boot-3)
