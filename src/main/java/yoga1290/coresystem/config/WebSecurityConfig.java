@@ -1,21 +1,30 @@
 package yoga1290.coresystem.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import yoga1290.coresystem.exceptions.Unauthorized;
+import yoga1290.coresystem.services.JWTService;
 
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -29,11 +38,14 @@ import java.util.List;
 public class WebSecurityConfig {
 
     private JwtRequestFilter jwtRequestFilter;
+    private JWTService jwtService;
     private WebSecurityProperties webSecurityProperties;
-    public WebSecurityConfig(JwtRequestFilter jwtRequestFilter,
+    public WebSecurityConfig(
+                             JWTService jwtService,
                              WebSecurityProperties webSecurityProperties) {
-        this.jwtRequestFilter = jwtRequestFilter;
         this.webSecurityProperties = webSecurityProperties;
+//        this.jwtRequestFilter = jwtRequestFilter;
+        this.jwtService= jwtService;
         System.out.println("INITIALIZING SECURITY " + webSecurityProperties.getRoles().toString());
 //        log.info("INITIALIZING SECURITY");
     }
@@ -71,25 +83,81 @@ public class WebSecurityConfig {
 
 //      Add JWT token filter
 // see https://github.com/spring-projects/spring-security/blob/15c2b156f19826bcebf4cc8af9e2511d84bb8673/config/src/main/java/org/springframework/security/config/annotation/web/builders/FilterOrderRegistration.java#L85C7-L85C34
-        http.addFilterBefore(
-                jwtRequestFilter,
-                AnonymousAuthenticationFilter.class
-//                SecurityContextHolderFilter.class
-//                UsernamePasswordAuthenticationFilter.class
-        );
+        AuthenticationManager authenticationManager = new AuthenticationManager() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                log.info("AuthenticationManager | authentication: ", authentication);
+                return authentication;
+            }
+        };
+        AuthenticationProvider authenticationProvider = new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                log.info("AuthenticationProvider | authentication: ", authentication);
+//                SecurityContextHolder.getContext()
+                return authentication;
+            }
 
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return true;
+            }
+        };
+
+        http.authenticationManager(authenticationManager);
+        http.authenticationProvider(authenticationProvider);
+//        http.securityContext(httpSecuritySecurityContextConfigurer -> {
+//            httpSecuritySecurityContextConfigurer.securityContextRepository()
+//        });
+
+//        /*
+        http.userDetailsService(username -> {
+
+            log.info(String.format("UserDetailsService | loadByUsername: %s", username));
+            //TODO
+            return new UserDetails() {
+                @Override
+                public Collection<? extends GrantedAuthority> getAuthorities() {
+                    return List.of(new GrantedAuthority() {
+                        @Override
+                        public String getAuthority() {
+                            return "USER";
+                        }
+                    });
+                }
+
+                @Override
+                public String getPassword() {
+                    return "";
+                }
+
+                @Override
+                public String getUsername() {
+                    return "tempo";
+                }
+            };
+        });
+// */
+
+//        http.authenticationManager(authentication -> authentication);
+//        http.authenticationProvider(new AnonymousAuthenticationProvider())
+
+        http.addFilterBefore(
+                new JwtRequestFilter(jwtService, authenticationManager),
+
+                // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-abstractprocessingfilter
+//                AbstractAuthenticationProcessingFilter.class
+
+//                SecurityContextHolderAwareRequestFilter.class
+//                AnonymousAuthenticationFilter.class
+//                SecurityContextHolderFilter.class
+                BasicAuthenticationFilter.class
+        );
         return http.build();
     }
 
-//    @Bean
-//    public FilterRegistrationBean<JwtRequestFilter> authenticationFilterRegistrationBean() {
-//        FilterRegistrationBean<JwtRequestFilter> registrationBean = new FilterRegistrationBean<>();
-//        registrationBean.setFilter(jwtRequestFilter);
-//        registrationBean.setOrder(1); // Set filter execution order
-//        return registrationBean;
-//    }
-
-    class AuthorizationManagerRequestMatcherRegistry implements Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> {
+    class AuthorizationManagerRequestMatcherRegistry
+            implements Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> {
 
         private final List<String> roles;
         public AuthorizationManagerRequestMatcherRegistry(List<String> roles) {
@@ -97,7 +165,8 @@ public class WebSecurityConfig {
         }
 
         @Override
-        public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry authorizationManagerRequestMatcherRegistry) {
+        public void customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+                                              authorizationManagerRequestMatcherRegistry) {
             try {
 
                 for (String roleItemStr : roles) {
@@ -111,6 +180,7 @@ public class WebSecurityConfig {
                             authorizationManagerRequestMatcherRegistry.requestMatchers(uri).permitAll();
                         } else {
                             authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasRole(role);
+                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasAuthority(role);
                         }
                     } catch (Exception e) {
                         log.error("bad <role,uri> pair format in \""+ roleItemStr +"\"", e);
