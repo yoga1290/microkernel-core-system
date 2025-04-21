@@ -3,9 +3,10 @@ package yoga1290.coresystem.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,18 +16,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import yoga1290.coresystem.exceptions.Unauthorized;
 import yoga1290.coresystem.services.JWTService;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
@@ -105,54 +103,15 @@ public class WebSecurityConfig {
             }
         };
 
-        http.authenticationManager(authenticationManager);
-        http.authenticationProvider(authenticationProvider);
+//        http.authenticationManager(authenticationManager);
+//        http.authenticationProvider(authenticationProvider);
         http.securityContext(httpSecuritySecurityContextConfigurer -> {
             httpSecuritySecurityContextConfigurer.securityContextRepository(
                                         new HttpSessionSecurityContextRepository());
         });
 
-//        http.securityContext(httpSecuritySecurityContextConfigurer -> {
-//            httpSecuritySecurityContextConfigurer.securityContextRepository()
-//        });
-
-        /*
-        http.userDetailsService(username -> {
-
-            log.info(String.format("UserDetailsService | loadByUsername: %s", username));
-            //TODO
-            return new UserDetails() {
-                @Override
-                public Collection<? extends GrantedAuthority> getAuthorities() {
-                    return List.of(new GrantedAuthority() {
-                        @Override
-                        public String getAuthority() {
-                            return "USER";
-                        }
-                    });
-                }
-
-                @Override
-                public String getPassword() {
-                    return "";
-                }
-
-                @Override
-                public String getUsername() {
-                    return "tempo";
-                }
-            };
-        });
-// */
         http.addFilterBefore(
-                new JwtRequestFilter(jwtService, authenticationManager),
-
-                // https://docs.spring.io/spring-security/reference/servlet/authentication/architecture.html#servlet-authentication-abstractprocessingfilter
-//                AbstractAuthenticationProcessingFilter.class
-
-//                SecurityContextHolderAwareRequestFilter.class
-//                AnonymousAuthenticationFilter.class
-//                SecurityContextHolderFilter.class
+                new JwtRequestFilter(jwtService),
                 UsernamePasswordAuthenticationFilter.class
         );
         return http.build();
@@ -181,8 +140,9 @@ public class WebSecurityConfig {
                         if (isPublicRole) {
                             authorizationManagerRequestMatcherRegistry.requestMatchers(uri).permitAll();
                         } else {
-                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasRole(role);
-                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasAuthority(role);
+//                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasRole(role);
+//                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).hasAuthority(role);
+                            authorizationManagerRequestMatcherRegistry.requestMatchers(uri).access(new RequestAuthorizationManager(role));
                         }
                     } catch (Exception e) {
                         log.error("bad <role,uri> pair format in \""+ roleItemStr +"\"", e);
@@ -206,7 +166,7 @@ public class WebSecurityConfig {
             .sessionManagement(new Customizer<SessionManagementConfigurer<HttpSecurity>>() {
                 @Override
                 public void customize(SessionManagementConfigurer<HttpSecurity> httpSecuritySessionManagementConfigurer) {
-                    httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER);
+                    httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
                 }
             });
 
@@ -217,6 +177,38 @@ public class WebSecurityConfig {
                 httpSecuritySessionManagementConfigurer.sessionFixation().none();
             }
         });
+    }
+
+    class RequestAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
+
+        private final String ROLE;
+        public RequestAuthorizationManager(String roleFilter) {
+            ROLE = roleFilter;
+        }
+
+        @Override
+        public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext object) {
+
+            log.info("RequestAuthorizationManager | authentication: {}", authentication);
+            log.info("RequestAuthorizationManager | authentication: {}", authentication);
+
+            boolean hasAccess = false;
+            for (GrantedAuthority grantedAuthority : authentication.get().getAuthorities()) {
+                hasAccess = hasAccess || ROLE.equals(grantedAuthority.getAuthority());
+
+                log.info("RequestAuthorizationManager | request: {} | GrantedAuthority: {} == {} | hasAccess: {}",
+                                            object.getRequest(),
+                                            grantedAuthority.getAuthority(),
+                                            ROLE,
+                                            hasAccess);
+            }
+            return new AuthorizationDecision(hasAccess);
+        }
+
+        @Override
+        public void verify(Supplier<Authentication> authentication, RequestAuthorizationContext object) {
+            log.info("RequestAuthorizationManager | verify | authentication: {}", authentication);
+        }
     }
 
     private void handleException(HttpSecurity http) throws Exception {
